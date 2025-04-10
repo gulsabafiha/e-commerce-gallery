@@ -30,17 +30,16 @@ export function CartButton() {
         onClick={handleClick}
       >
         <ActionIcon
-          variant="light"
+          variant="filled"
           size="xl"
           color="green"
           aria-label="Open cart"
           style={{
-            backgroundColor: 'transparent',
-            border: '2px solid var(--mantine-color-green-6)',
             borderRadius: '12px',
+            padding: '12px',
           }}
         >
-          <IconShoppingCart size={22} />
+          <IconShoppingCart size={24} />
         </ActionIcon>
         {itemCount > 0 && (
           <Badge
@@ -54,6 +53,7 @@ export function CartButton() {
               padding: '0 6px',
               minWidth: '20px',
               height: '20px',
+              borderRadius: '10px',
             }}
           >
             {itemCount}
@@ -70,7 +70,11 @@ export function CartButton() {
               left: '50%',
               transform: 'translateX(-50%)',
               whiteSpace: 'nowrap',
-              fontSize: '0.75rem'
+              fontSize: '0.75rem',
+              backgroundColor: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
             }}
           >
             {total.toFixed(2)}₺

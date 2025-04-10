@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Grid, Container, Title, Group, Loader, Center, Select, Box, TextInput, Transition, Text, Stack } from '@mantine/core';
+import type { MantineStyleProp } from '@mantine/core';
 import { IconSearch, IconMoodSad } from '@tabler/icons-react';
 import { ProductCard } from './ProductCard';
 import { ProductFilters } from './ProductFilters';
@@ -143,7 +144,7 @@ export function ProductList() {
           </Group>
 
           <Transition mounted={!loading} transition="fade" duration={400}>
-            {(styles) => (
+            {(styles: Record<string, any>) => (
               <>
                 {filteredProducts.length > 0 ? (
                   <Grid style={styles} gutter="lg">
@@ -169,7 +170,7 @@ export function ProductList() {
                     transition="fade"
                     duration={400}
                   >
-                    {(noResultsStyles) => (
+                    {(noResultsStyles: Record<string, any>) => (
                       <Center py={50} style={{ ...styles, ...noResultsStyles }}>
                         <Stack align="center" gap="md">
                           <IconMoodSad size={48} color="var(--mantine-color-gray-5)" />

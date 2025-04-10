@@ -1,11 +1,17 @@
 'use client';
 
 import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 import { Provider as ReduxProvider } from 'react-redux';
 import { store } from '../store/store';
 import '@mantine/core/styles.css';
+import '@mantine/notifications/styles.css';
 
-export function Providers({ children }: { children: React.ReactNode }) {
+type ProvidersProps = {
+  children: any;
+};
+
+export function Providers({ children }: ProvidersProps) {
   return (
     <ReduxProvider store={store}>
       <MantineProvider
@@ -28,6 +34,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         }}
         defaultColorScheme="light"
       >
+        <Notifications />
         {children}
       </MantineProvider>
     </ReduxProvider>

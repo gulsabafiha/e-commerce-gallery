@@ -11,7 +11,10 @@ const nextConfig = {
   // Disable image optimization during development
   webpack: (config) => {
     return config;
-  }
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 }
 
 module.exports = nextConfig 

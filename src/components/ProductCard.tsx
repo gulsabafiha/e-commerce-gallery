@@ -1,7 +1,8 @@
 'use client';
 
 import { Card, Image, Text, Badge, Button, Group, Stack } from '@mantine/core';
-import { IconShoppingCart } from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
+import { IconShoppingCart, IconCheck } from '@tabler/icons-react';
 import { Product } from '../types/product';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../features/cart/cartSlice';
@@ -18,6 +19,12 @@ export function ProductCard({ product }: ProductCardProps) {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch(addToCart(product));
+    notifications.show({
+      title: 'Added to Cart',
+      message: `${product.name} has been added to your cart`,
+      color: 'green',
+      icon: <IconCheck size={16} />,
+    });
   };
 
   return (

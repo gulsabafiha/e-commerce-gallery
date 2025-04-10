@@ -15,7 +15,19 @@ interface CartState {
 
 // Load cart from localStorage if available
 const loadCartFromStorage = (): CartState => {
-  if (typeof window !== 'undefined') {
+  const initialState = {
+    items: [],
+    isOpen: false,
+    subtotal: 0,
+    discount: 0,
+    total: 0
+  };
+
+  if (typeof window === 'undefined') {
+    return initialState;
+  }
+
+  try {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       const parsedCart = JSON.parse(savedCart);
@@ -24,14 +36,11 @@ const loadCartFromStorage = (): CartState => {
         isOpen: false // Always ensure cart is closed on page load
       };
     }
+  } catch (error) {
+    console.error('Error loading cart from storage:', error);
   }
-  return {
-    items: [],
-    isOpen: false,
-    subtotal: 0,
-    discount: 0,
-    total: 0
-  };
+
+  return initialState;
 };
 
 const initialState: CartState = loadCartFromStorage();

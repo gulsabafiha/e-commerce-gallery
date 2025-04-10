@@ -1,89 +1,92 @@
 'use client';
 
-import { Modal, Text, Button, Group, Stack, Image, Box } from '@mantine/core';
+import { Modal, Text, Button, Group, Stack, Image, NumberInput, ActionIcon, Box } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconTrash, IconX, IconCheck, IconPlus, IconMinus } from '@tabler/icons-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
-import { toggleCart, removeFromCart, updateQuantity, clearCart } from '../features/cart/cartSlice';
-import { IconTrash, IconMinus, IconPlus, IconX } from '@tabler/icons-react';
-import { useState, useCallback } from 'react';
-import { notifications } from '@mantine/notifications';
+import { removeFromCart, updateQuantity, clearCart, toggleCart } from '../features/cart/cartSlice';
+import { useState } from 'react';
 
 export function CartModal() {
   const dispatch = useDispatch();
   const { items, isOpen, subtotal, discount, total } = useSelector((state: RootState) => state.cart);
-  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
-  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
+  const [loading, setLoading] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   const handleClose = () => {
     dispatch(toggleCart());
   };
 
-  const handleQuantityChange = useCallback(async (id: string, quantity: number) => {
+  const handleQuantityChange = (id: string, value: number | string) => {
+    const quantity = typeof value === 'string' ? parseInt(value, 10) : value;
+    if (isNaN(quantity)) return;
+
     try {
-      setLoading(prev => ({ ...prev, [id]: true }));
-      
-      if (quantity < 0) {
-        throw new Error('Quantity cannot be negative');
-      }
-      
-      dispatch(updateQuantity({ id, quantity }));
-      
       if (quantity === 0) {
+        dispatch(removeFromCart(id));
         notifications.show({
           title: 'Item Removed',
-          message: 'Item has been removed from your cart',
-          color: 'green'
+          message: 'Item has been removed from cart',
+          color: 'green',
+          icon: <IconCheck size={16} />,
+        });
+      } else {
+        dispatch(updateQuantity({ id, quantity }));
+        notifications.show({
+          title: 'Cart Updated',
+          message: 'Item quantity has been updated',
+          color: 'green',
+          icon: <IconCheck size={16} />,
         });
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update quantity';
+    } catch (error) {
       notifications.show({
         title: 'Error',
-        message: errorMessage,
-        color: 'red'
+        message: 'Failed to update quantity',
+        color: 'red',
+        icon: <IconX size={16} />,
       });
-    } finally {
-      setLoading(prev => ({ ...prev, [id]: false }));
     }
-  }, [dispatch]);
+  };
 
-  const handleRemove = useCallback(async (id: string) => {
+  const handleRemove = (id: string) => {
     try {
-      setLoading(prev => ({ ...prev, [id]: true }));
       dispatch(removeFromCart(id));
       notifications.show({
         title: 'Item Removed',
-        message: 'Item has been removed from your cart',
-        color: 'green'
+        message: 'Item has been removed from cart',
+        color: 'green',
+        icon: <IconCheck size={16} />,
       });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove item';
+    } catch (error) {
       notifications.show({
         title: 'Error',
-        message: errorMessage,
-        color: 'red'
+        message: 'Failed to remove item',
+        color: 'red',
+        icon: <IconX size={16} />,
       });
-    } finally {
-      setLoading(prev => ({ ...prev, [id]: false }));
     }
-  }, [dispatch]);
+  };
 
-  const handleClear = useCallback(async () => {
+  const handleClear = () => {
     try {
       dispatch(clearCart());
       notifications.show({
         title: 'Cart Cleared',
-        message: 'All items have been removed from your cart',
-        color: 'green'
+        message: 'All items have been removed from cart',
+        color: 'green',
+        icon: <IconCheck size={16} />,
       });
-    } catch {
+    } catch (error) {
       notifications.show({
         title: 'Error',
         message: 'Failed to clear cart',
-        color: 'red'
+        color: 'red',
+        icon: <IconX size={16} />,
       });
     }
-  }, [dispatch]);
+  };
 
   const handleImageError = (id: string) => {
     setImageErrors(prev => ({ ...prev, [id]: true }));
@@ -95,22 +98,16 @@ export function CartModal() {
       onClose={handleClose}
       title="Shopping Cart"
       size="lg"
-      styles={{
-        body: {
-          paddingTop: '1rem'
-        },
-        header: {
-          marginBottom: 0
-        }
-      }}
     >
       {items.length === 0 ? (
-        <Text ta="center" py="xl" c="dimmed">Your cart is empty</Text>
+        <Text ta="center" fz="lg" fw={500} c="dimmed">
+          Your cart is empty
+        </Text>
       ) : (
         <Stack>
           {items.map((item) => (
             <Group key={item.id} wrap="nowrap" justify="space-between" style={{ gap: '8px' }}>
-              <Group wrap="nowrap" gap="sm">
+              <Group wrap="nowrap">
                 {imageErrors[item.id] ? (
                   <Box
                     w={{ base: 60, sm: 80 }}
@@ -135,54 +132,42 @@ export function CartModal() {
                     style={{ objectFit: 'contain', backgroundColor: '#f8f9fa', flexShrink: 0 }}
                   />
                 )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <Text size="sm" fw={500} lineClamp={2}>
+                <div>
+                  <Text size="sm" fw={500}>
                     {item.name}
                   </Text>
-                  <Text size="sm" c="dimmed" mt={4}>
+                  <Text size="xs" c="dimmed">
                     {item.price.toFixed(2)}₺ each
                   </Text>
                 </div>
               </Group>
-              
               <Group wrap="nowrap" gap="xs">
                 <Group wrap="nowrap" gap={5}>
-                  <Button
-                    size="xs"
+                  <ActionIcon
+                    size="sm"
                     variant="subtle"
                     color="gray"
-                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                    loading={loading[item.id]}
-                    disabled={loading[item.id]}
+                    onClick={() => handleQuantityChange(item.id, Math.max(0, item.quantity - 1))}
                   >
                     <IconMinus size={14} />
-                  </Button>
+                  </ActionIcon>
                   <Text w={30} ta="center">{item.quantity}</Text>
-                  <Button
-                    size="xs"
+                  <ActionIcon
+                    size="sm"
                     variant="subtle"
                     color="gray"
                     onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    loading={loading[item.id]}
-                    disabled={loading[item.id]}
                   >
                     <IconPlus size={14} />
-                  </Button>
+                  </ActionIcon>
                 </Group>
-                <Text size="sm" fw={500} w={80} ta="right" display={{ base: 'none', sm: 'block' }}>
-                  {(item.price * item.quantity).toFixed(2)}₺
-                </Text>
-                <Button
-                  variant="subtle"
+                <ActionIcon
                   color="red"
-                  size="xs"
                   onClick={() => handleRemove(item.id)}
-                  px={0}
-                  loading={loading[item.id]}
-                  disabled={loading[item.id]}
+                  variant="subtle"
                 >
                   <IconTrash size={16} />
-                </Button>
+                </ActionIcon>
               </Group>
             </Group>
           ))}
@@ -210,10 +195,29 @@ export function CartModal() {
               color="red" 
               onClick={handleClear}
               leftSection={<IconTrash size={16} />}
+              loading={loading}
             >
               Clear Cart
             </Button>
-            <Button color="green">
+            <Button
+              onClick={() => {
+                setLoading(true);
+                // Simulate checkout process
+                setTimeout(() => {
+                  notifications.show({
+                    title: 'Order Placed',
+                    message: 'Your order has been placed successfully',
+                    color: 'green',
+                    icon: <IconCheck size={16} />,
+                  });
+                  dispatch(clearCart());
+                  dispatch(toggleCart());
+                  setLoading(false);
+                }, 2000);
+              }}
+              loading={loading}
+              color="green"
+            >
               Checkout
             </Button>
           </Group>
