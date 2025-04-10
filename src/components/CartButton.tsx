@@ -1,6 +1,6 @@
 'use client';
 
-import { ActionIcon, Badge, Group, Indicator, Box, Text } from '@mantine/core';
+import { ActionIcon, Badge, Group, Box, Text } from '@mantine/core';
 import { IconShoppingCart } from '@tabler/icons-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';

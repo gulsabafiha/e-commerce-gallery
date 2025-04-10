@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CartButton } from './CartButton';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import cartReducer, { toggleCart, CartItem } from '../features/cart/cartSlice';
+import cartReducer, { CartItem } from '../features/cart/cartSlice';
 import { Product } from '../types/product';
 import '@testing-library/jest-dom';
 import { MantineProvider } from '@mantine/core';

@@ -25,10 +25,14 @@ export function ProductList() {
     const fetchProducts = async () => {
       try {
         const response = await fetch('/api/products');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
         setProducts(data);
       } catch (error) {
         console.error('Error fetching products:', error);
+        setProducts([]); // Set empty array on error
       } finally {
         setLoading(false);
       }
@@ -73,6 +77,12 @@ export function ProductList() {
     router.push(`/product/${productId}`);
   };
 
+  const handleSortChange = (value: string | null) => {
+    if (value && (value === 'name-asc' || value === 'name-desc' || value === 'price-asc' || value === 'price-desc')) {
+      handleFilterChange({ sortBy: value });
+    }
+  };
+
   if (loading) {
     return (
       <Center h={400}>
@@ -85,17 +95,19 @@ export function ProductList() {
     <Container size="xl" py="xl">
       <Title order={1} mb="xl">All Products</Title>
       
-      <TextInput
-        placeholder="Search products..."
-        leftSection={<IconSearch size={16} />}
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        mb="xl"
-        style={{ maxWidth: 400 }}
-      />
-      
       <Grid>
         <Grid.Col span={{ base: 12, sm: 3 }}>
+          <TextInput
+            placeholder="Search products..."
+            leftSection={<IconSearch size={16} />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            mb="xl"
+            styles={{
+              root: { width: '100%' }
+            }}
+          />
+          
           <ProductFilters
             filters={filters}
             onFilterChange={handleFilterChange}
@@ -104,7 +116,7 @@ export function ProductList() {
         </Grid.Col>
         
         <Grid.Col span={{ base: 12, sm: 9 }}>
-          <Group justify="flex-end" mb="md">
+          <Group justify="flex-end" mb="xl">
             <Group gap="xs">
               <Box>Show:</Box>
               <Select
@@ -118,7 +130,7 @@ export function ProductList() {
               <Box>Sort By:</Box>
               <Select
                 value={filters.sortBy}
-                onChange={(value: any) => handleFilterChange({ sortBy: value })}
+                onChange={handleSortChange}
                 data={[
                   { value: 'name-asc', label: 'Name (A-Z)' },
                   { value: 'name-desc', label: 'Name (Z-A)' },
@@ -134,7 +146,7 @@ export function ProductList() {
             {(styles) => (
               <>
                 {filteredProducts.length > 0 ? (
-                  <Grid style={styles}>
+                  <Grid style={styles} gutter="lg">
                     {filteredProducts.map((product) => (
                       <Grid.Col 
                         key={product.id} 

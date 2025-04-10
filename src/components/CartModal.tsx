@@ -1,6 +1,6 @@
 'use client';
 
-import { Modal, Text, Button, Group, Stack, Image, NumberInput, Badge, Notification, Box } from '@mantine/core';
+import { Modal, Text, Button, Group, Stack, Image, Box } from '@mantine/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { toggleCart, removeFromCart, updateQuantity, clearCart } from '../features/cart/cartSlice';
@@ -35,10 +35,11 @@ export function CartModal() {
           color: 'green'
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update quantity';
       notifications.show({
         title: 'Error',
-        message: error instanceof Error ? error.message : 'Failed to update quantity',
+        message: errorMessage,
         color: 'red'
       });
     } finally {
@@ -55,10 +56,11 @@ export function CartModal() {
         message: 'Item has been removed from your cart',
         color: 'green'
       });
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove item';
       notifications.show({
         title: 'Error',
-        message: 'Failed to remove item',
+        message: errorMessage,
         color: 'red'
       });
     } finally {
@@ -74,7 +76,7 @@ export function CartModal() {
         message: 'All items have been removed from your cart',
         color: 'green'
       });
-    } catch (error) {
+    } catch {
       notifications.show({
         title: 'Error',
         message: 'Failed to clear cart',

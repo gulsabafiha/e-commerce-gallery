@@ -26,6 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             ]
           }
         }}
+        defaultColorScheme="light"
       >
         {children}
       </MantineProvider>
