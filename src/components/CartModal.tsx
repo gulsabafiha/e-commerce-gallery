@@ -1,29 +1,90 @@
 'use client';
 
-import { Modal, Text, Button, Group, Stack, Image, NumberInput, Badge } from '@mantine/core';
+import { Modal, Text, Button, Group, Stack, Image, NumberInput, Badge, Notification, Box } from '@mantine/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store/store';
 import { toggleCart, removeFromCart, updateQuantity, clearCart } from '../features/cart/cartSlice';
-import { IconTrash, IconMinus, IconPlus } from '@tabler/icons-react';
+import { IconTrash, IconMinus, IconPlus, IconX } from '@tabler/icons-react';
+import { useState, useCallback } from 'react';
+import { notifications } from '@mantine/notifications';
 
 export function CartModal() {
   const dispatch = useDispatch();
   const { items, isOpen, subtotal, discount, total } = useSelector((state: RootState) => state.cart);
+  const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>({});
 
   const handleClose = () => {
     dispatch(toggleCart());
   };
 
-  const handleQuantityChange = (id: string, quantity: number) => {
-    dispatch(updateQuantity({ id, quantity }));
-  };
+  const handleQuantityChange = useCallback(async (id: string, quantity: number) => {
+    try {
+      setLoading(prev => ({ ...prev, [id]: true }));
+      
+      if (quantity < 0) {
+        throw new Error('Quantity cannot be negative');
+      }
+      
+      dispatch(updateQuantity({ id, quantity }));
+      
+      if (quantity === 0) {
+        notifications.show({
+          title: 'Item Removed',
+          message: 'Item has been removed from your cart',
+          color: 'green'
+        });
+      }
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: error instanceof Error ? error.message : 'Failed to update quantity',
+        color: 'red'
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, [id]: false }));
+    }
+  }, [dispatch]);
 
-  const handleRemove = (id: string) => {
-    dispatch(removeFromCart(id));
-  };
+  const handleRemove = useCallback(async (id: string) => {
+    try {
+      setLoading(prev => ({ ...prev, [id]: true }));
+      dispatch(removeFromCart(id));
+      notifications.show({
+        title: 'Item Removed',
+        message: 'Item has been removed from your cart',
+        color: 'green'
+      });
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to remove item',
+        color: 'red'
+      });
+    } finally {
+      setLoading(prev => ({ ...prev, [id]: false }));
+    }
+  }, [dispatch]);
 
-  const handleClear = () => {
-    dispatch(clearCart());
+  const handleClear = useCallback(async () => {
+    try {
+      dispatch(clearCart());
+      notifications.show({
+        title: 'Cart Cleared',
+        message: 'All items have been removed from your cart',
+        color: 'green'
+      });
+    } catch (error) {
+      notifications.show({
+        title: 'Error',
+        message: 'Failed to clear cart',
+        color: 'red'
+      });
+    }
+  }, [dispatch]);
+
+  const handleImageError = (id: string) => {
+    setImageErrors(prev => ({ ...prev, [id]: true }));
   };
 
   return (
@@ -32,22 +93,47 @@ export function CartModal() {
       onClose={handleClose}
       title="Shopping Cart"
       size="lg"
+      styles={{
+        body: {
+          paddingTop: '1rem'
+        },
+        header: {
+          marginBottom: 0
+        }
+      }}
     >
       {items.length === 0 ? (
         <Text ta="center" py="xl" c="dimmed">Your cart is empty</Text>
       ) : (
         <Stack>
           {items.map((item) => (
-            <Group key={item.id} wrap="nowrap" justify="space-between">
-              <Group wrap="nowrap" gap="md">
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  w={80}
-                  h={80}
-                  style={{ objectFit: 'contain', backgroundColor: '#f8f9fa' }}
-                />
-                <div style={{ flex: 1, minWidth: 180 }}>
+            <Group key={item.id} wrap="nowrap" justify="space-between" style={{ gap: '8px' }}>
+              <Group wrap="nowrap" gap="sm">
+                {imageErrors[item.id] ? (
+                  <Box
+                    w={{ base: 60, sm: 80 }}
+                    h={{ base: 60, sm: 80 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#f8f9fa',
+                      flexShrink: 0
+                    }}
+                  >
+                    <IconX size={24} color="#ced4da" />
+                  </Box>
+                ) : (
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    w={{ base: 60, sm: 80 }}
+                    h={{ base: 60, sm: 80 }}
+                    onError={() => handleImageError(item.id)}
+                    style={{ objectFit: 'contain', backgroundColor: '#f8f9fa', flexShrink: 0 }}
+                  />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <Text size="sm" fw={500} lineClamp={2}>
                     {item.name}
                   </Text>
@@ -57,13 +143,15 @@ export function CartModal() {
                 </div>
               </Group>
               
-              <Group wrap="nowrap" gap="md">
+              <Group wrap="nowrap" gap="xs">
                 <Group wrap="nowrap" gap={5}>
                   <Button
                     size="xs"
                     variant="subtle"
                     color="gray"
                     onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                    loading={loading[item.id]}
+                    disabled={loading[item.id]}
                   >
                     <IconMinus size={14} />
                   </Button>
@@ -73,18 +161,23 @@ export function CartModal() {
                     variant="subtle"
                     color="gray"
                     onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                    loading={loading[item.id]}
+                    disabled={loading[item.id]}
                   >
                     <IconPlus size={14} />
                   </Button>
                 </Group>
-                <Text size="sm" fw={500} w={80} ta="right">
+                <Text size="sm" fw={500} w={80} ta="right" display={{ base: 'none', sm: 'block' }}>
                   {(item.price * item.quantity).toFixed(2)}₺
                 </Text>
                 <Button
                   variant="subtle"
                   color="red"
-                  size="sm"
+                  size="xs"
                   onClick={() => handleRemove(item.id)}
+                  px={0}
+                  loading={loading[item.id]}
+                  disabled={loading[item.id]}
                 >
                   <IconTrash size={16} />
                 </Button>

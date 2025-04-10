@@ -13,6 +13,7 @@
     "@mantine/core": "^7.17.4",
     "@mantine/form": "^7.17.4",
     "@mantine/hooks": "^7.17.4",
+    "@mantine/notifications": "^7.17.4",
     "@reduxjs/toolkit": "^2.6.1",
     "@tabler/icons-react": "^3.31.0",
     "next": "15.3.0",
