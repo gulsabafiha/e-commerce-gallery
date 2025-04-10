@@ -18,7 +18,11 @@ const loadCartFromStorage = (): CartState => {
   if (typeof window !== 'undefined') {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
-      return JSON.parse(savedCart);
+      const parsedCart = JSON.parse(savedCart);
+      return {
+        ...parsedCart,
+        isOpen: false // Always ensure cart is closed on page load
+      };
     }
   }
   return {

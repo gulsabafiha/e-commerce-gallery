@@ -5,6 +5,7 @@ import { IconShoppingCart } from '@tabler/icons-react';
 import { Product } from '../types/product';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '../features/cart/cartSlice';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: Product;
@@ -12,8 +13,10 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const dispatch = useDispatch();
+  const [isHovered, setIsHovered] = useState(false);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
     dispatch(addToCart(product));
   };
 
@@ -27,24 +30,27 @@ export function ProductCard({ product }: ProductCardProps) {
         display: 'flex', 
         flexDirection: 'column', 
         height: '100%',
-        transition: 'all 0.2s ease-in-out',
-        cursor: 'pointer'
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: 'pointer',
+        transform: isHovered ? 'translateY(-8px)' : 'none',
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       styles={{
         root: {
           '&:hover': {
-            transform: 'translateY(-5px)',
-            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-          },
-          '&:active': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.12)',
           }
         }
       }}
     >
       <Card.Section>
-        <div style={{ height: '240px', width: '100%', position: 'relative' }}>
+        <div style={{ 
+          height: '240px', 
+          width: '100%', 
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
           <Image
             src={product.image}
             alt={product.name}
@@ -58,7 +64,8 @@ export function ProductCard({ product }: ProductCardProps) {
               left: 0,
               width: '100%',
               height: '100%',
-              transition: 'transform 0.2s ease-in-out'
+              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              transform: isHovered ? 'scale(1.1)' : 'scale(1)',
             }}
           />
         </div>
@@ -66,7 +73,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
       <Stack gap="xs" mt="md" style={{ flex: 1 }}>
         <div>
-          <Text fw={500} size="lg" lineClamp={2} style={{ minHeight: '48px' }}>
+          <Text fw={500} size="lg" lineClamp={2} style={{ 
+            minHeight: '48px',
+            transition: 'color 0.2s ease',
+            color: isHovered ? 'var(--mantine-color-green-6)' : undefined
+          }}>
             {product.name}
           </Text>
           
@@ -76,7 +87,10 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <Group justify="space-between" align="center" mt="auto">
-          <Text fw={700} size="xl" c="green.6">
+          <Text fw={700} size="xl" c="green.6" style={{
+            transition: 'transform 0.2s ease',
+            transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+          }}>
             {product.price.toFixed(2)}₺
           </Text>
           {!product.inStock ? (
@@ -91,12 +105,12 @@ export function ProductCard({ product }: ProductCardProps) {
               radius="md"
               size="sm"
               leftSection={<IconShoppingCart size={16} />}
+              style={{
+                transition: 'all 0.2s ease',
+                transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+              }}
               styles={{
                 root: {
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                  },
                   '&:active': {
                     transform: 'scale(0.95)',
                   }

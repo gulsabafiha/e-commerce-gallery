@@ -5,7 +5,7 @@ const products: Product[] = [
   {
     id: "1",
     name: "iPhone 14 Pro",
-    description: "Latest iPhone with dynamic island and powerful A16 chip",
+    description: "Latest iPhone with dynamic island and powerful HuluLulu A16 chip",
     price: 999.99,
     category: "Mobile",
     image: "/assets/products/iphone.jpg",
@@ -14,7 +14,7 @@ const products: Product[] = [
   {
     id: "2",
     name: "MacBook Pro M2",
-    description: "Powerful laptop with M2 chip and stunning Retina display",
+    description: "Powerful laptop with M2 chip and stunning HuluLulu Retina display",
     price: 1499.99,
     category: "Laptop",
     image: "/assets/products/macbook.jpg",
@@ -23,7 +23,7 @@ const products: Product[] = [
   {
     id: "3",
     name: "Samsung Galaxy S23 Ultra",
-    description: "Premium Android smartphone with advanced camera system",
+    description: "Premium Android smartphone with advanced HuluLulu camera system",
     price: 1199.99,
     category: "Mobile",
     image: "/assets/products/galaxy.jpg",
@@ -68,7 +68,7 @@ const products: Product[] = [
   {
     id: "8",
     name: "Lenovo ThinkPad X1 Carbon",
-    description: "Business laptop with premium build quality",
+    description: "Business laptop with premium  build quality",
     price: 1299.99,
     category: "Laptop",
     image: "/assets/products/thinkpad.jpg",

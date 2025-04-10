@@ -1,14 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Grid, Container, Title, Group, Loader, Center, Select, Box } from '@mantine/core';
+import { Grid, Container, Title, Group, Loader, Center, Select, Box, TextInput, Transition, Text, Stack } from '@mantine/core';
+import { IconSearch, IconMoodSad } from '@tabler/icons-react';
 import { ProductCard } from './ProductCard';
 import { ProductFilters } from './ProductFilters';
 import { Product, FilterState } from '../types/product';
+import { useRouter } from 'next/navigation';
 
 export function ProductList() {
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<FilterState>({
     category: 'All Categories',
     priceRange: { min: 0, max: 2000 },
@@ -40,7 +44,10 @@ export function ProductList() {
       (filters.category === 'All Categories' || product.category === filters.category) &&
       product.price >= filters.priceRange.min &&
       product.price <= filters.priceRange.max &&
-      (!filters.showInStock || product.inStock)
+      (!filters.showInStock || product.inStock) &&
+      (searchQuery === '' || 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()))
     )
     .sort((a, b) => {
       switch (filters.sortBy) {
@@ -62,6 +69,10 @@ export function ProductList() {
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
+  const handleProductClick = (productId: string) => {
+    router.push(`/product/${productId}`);
+  };
+
   if (loading) {
     return (
       <Center h={400}>
@@ -73,6 +84,15 @@ export function ProductList() {
   return (
     <Container size="xl" py="xl">
       <Title order={1} mb="xl">All Products</Title>
+      
+      <TextInput
+        placeholder="Search products..."
+        leftSection={<IconSearch size={16} />}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        mb="xl"
+        style={{ maxWidth: 400 }}
+      />
       
       <Grid>
         <Grid.Col span={{ base: 12, sm: 3 }}>
@@ -110,13 +130,56 @@ export function ProductList() {
             </Group>
           </Group>
 
-          <Grid>
-            {filteredProducts.map((product) => (
-              <Grid.Col key={product.id} span={{ base: 12, sm: 6, md: 4 }}>
-                <ProductCard product={product} />
-              </Grid.Col>
-            ))}
-          </Grid>
+          <Transition mounted={!loading} transition="fade" duration={400}>
+            {(styles) => (
+              <>
+                {filteredProducts.length > 0 ? (
+                  <Grid style={styles}>
+                    {filteredProducts.map((product) => (
+                      <Grid.Col 
+                        key={product.id} 
+                        span={{ base: 12, sm: 6, md: 4 }}
+                        style={{
+                          transition: 'transform 0.3s ease, opacity 0.3s ease',
+                          transform: 'translateY(0)',
+                          opacity: 1
+                        }}
+                      >
+                        <div onClick={() => handleProductClick(product.id)}>
+                          <ProductCard product={product} />
+                        </div>
+                      </Grid.Col>
+                    ))}
+                  </Grid>
+                ) : (
+                  <Transition
+                    mounted={true}
+                    transition="fade"
+                    duration={400}
+                  >
+                    {(noResultsStyles) => (
+                      <Center py={50} style={{ ...styles, ...noResultsStyles }}>
+                        <Stack align="center" gap="md">
+                          <IconMoodSad size={48} color="var(--mantine-color-gray-5)" />
+                          <Text size="xl" c="dimmed" ta="center">
+                            No products found
+                            {searchQuery && (
+                              <>
+                                <br />
+                                <Text size="sm" mt={4}>
+                                  Try adjusting your search or filters
+                                </Text>
+                              </>
+                            )}
+                          </Text>
+                        </Stack>
+                      </Center>
+                    )}
+                  </Transition>
+                )}
+              </>
+            )}
+          </Transition>
         </Grid.Col>
       </Grid>
     </Container>
